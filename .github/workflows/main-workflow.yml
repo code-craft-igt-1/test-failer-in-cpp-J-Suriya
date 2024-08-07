@@ -8,22 +8,33 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtest-dev
+        sudo apt-get install -y cmake
+        cd /usr/src/gtest
+        sudo cmake CMakeLists.txt
+        sudo make
+        sudo cp *.a /usr/lib
+
     - name: setup and run linter
       run: |
         pip install cpplint
-        cpplint  --filter=-legal --linelength=100 *.cpp
+        cpplint --filter=-legal --linelength=100 *.cpp
 
     - name: tshirts fail
       run: |
-        g++ -Wall -Wextra -Werror test_tshirts.cpp -o tshirts.out
+        g++ -Wall -Wextra -Werror -lgtest -lgtest_main test_tshirts.cpp -o tshirts.out
         bash .github/workflows/expectfail.sh ./tshirts.out
 
     - name: misaligned fail
       run: |
-        g++ -Wall -Wextra -Werror test_misaligned.cpp -o misaligned.out
+        g++ -Wall -Wextra -Werror -lgtest -lgtest_main test_misaligned.cpp -o misaligned.out
         bash .github/workflows/expectfail.sh ./misaligned.out
 
     - name: alerter fail
       run: |
-        g++ -Wall -Wextra -Werror test_weatherreport.cpp -o weatherreport.out
+        g++ -Wall -Wextra -Werror -lgtest -lgtest_main test_weatherreport.cpp -o weatherreport.out
         bash .github/workflows/expectfail.sh ./weatherreport.out
