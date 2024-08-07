@@ -4,15 +4,19 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
     
     - name: Install dependencies
       run: |
-        choco install cmake -y
-        choco install googletest -y
+        sudo apt-get update
+        sudo apt-get install -y libgtest-dev
+        sudo apt-get install -y cmake
+        cd /usr/src/gtest
+        sudo cmake CMakeLists.txt
+        sudo make
 
     - name: setup and run linter
       run: |
@@ -21,21 +25,15 @@ jobs:
 
     - name: tshirts fail
       run: |
-        cmake -S . -B build
-        cmake --build build --config Release
-        build\Release\test_tshirts.exe
-        bash .github/workflows/expectfail.sh build\Release\test_tshirts.exe
+        g++ -Wall -Wextra -Werror -lgtest -lgtest_main test_tshirts.cpp -o tshirts.out
+        bash .github/workflows/expectfail.sh ./tshirts.out
 
     - name: misaligned fail
       run: |
-        cmake -S . -B build
-        cmake --build build --config Release
-        build\Release\test_misaligned.exe
-        bash .github/workflows/expectfail.sh build\Release\test_misaligned.exe
+        g++ -Wall -Wextra -Werror -lgtest -lgtest_main test_misaligned.cpp -o misaligned.out
+        bash .github/workflows/expectfail.sh ./misaligned.out
 
     - name: alerter fail
       run: |
-        cmake -S . -B build
-        cmake --build build --config Release
-        build\Release\test_weatherreport.exe
-        bash .github/workflows/expectfail.sh build\Release\test_weatherreport.exe
+        g++ -Wall -Wextra -Werror -lgtest -lgtest_main test_weatherreport.cpp -o weatherreport.out
+        bash .github/workflows/expectfail.sh ./weatherreport.out
